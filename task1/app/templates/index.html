@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter | Конвертер единиц</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-3">
+                <i class="fa-solid fa-ruler-combined text-blue-600"></i>
+                Unit Converter
+            </h1>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8">
+            <!-- Категории -->
+            <div class="flex flex-wrap gap-2 mb-8 border-b pb-4" id="category-tabs"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Из -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Из</label>
+                    <select id="from-unit" class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-700 text-lg"></select>
+                    <!-- СЧЁТЧИК С ЗАЩИТОЙ -->
+                    <input type="number" id="value" value="1" step="any" min="0"
+                           class="mt-4 w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-700 text-3xl font-semibold">
+                </div>
+
+                <!-- Swap -->
+                <div class="flex items-center justify-center pt-8">
+                    <button onclick="swapUnits()" 
+                            class="p-4 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 rounded-2xl text-blue-600 dark:text-blue-400 transition-all active:scale-95">
+                        <i class="fa-solid fa-arrow-right-arrow-left text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- В -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">В</label>
+                    <select id="to-unit" class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-700 text-lg"></select>
+                    <div id="result" 
+                         class="mt-4 w-full px-4 py-3 rounded-2xl border border-emerald-500 bg-emerald-600 text-white text-3xl font-semibold min-h-[52px] flex items-center justify-center shadow-inner">
+                        —
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex gap-4">
+                <button onclick="performConversion()" 
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-2xl transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-sync-alt"></i>
+                    Конвертировать
+                </button>
+                
+                <button onclick="clearAll()" 
+                        class="px-8 bg-red-500/20 hover:bg-red-500/30 border border-red-500 text-white font-medium rounded-2xl transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-trash"></i>
+                    Очистить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCategory = 'length';
+        let categoriesData = {};
+
+        async function loadCategories() {
+            const res = await fetch('/api/categories');
+            categoriesData = await res.json();
+            renderCategoryTabs();
+            await loadUnits();
+        }
+
+        function renderCategoryTabs() {
+            const container = document.getElementById('category-tabs');
+            container.innerHTML = Object.keys(categoriesData).map(cat => `
+                <button onclick="selectCategory('${cat}')" 
+                        class="category-tab px-6 py-2 rounded-3xl text-sm font-medium transition-all ${cat === currentCategory ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}">
+                    ${categoriesData[cat]}
+                </button>
+            `).join('');
+        }
+
+        async function selectCategory(cat) {
+            currentCategory = cat;
+            renderCategoryTabs();
+            await loadUnits();
+        }
+
+        async function loadUnits() {
+            const res = await fetch(`/api/units/${currentCategory}`);
+            const data = await res.json();
+            const fromSelect = document.getElementById('from-unit');
+            const toSelect = document.getElementById('to-unit');
+            fromSelect.innerHTML = data.units.map(u => `<option value="${u}">${u}</option>`).join('');
+            toSelect.innerHTML = data.units.map(u => `<option value="${u}">${u}</option>`).join('');
+            if (data.units.length > 1) toSelect.value = data.units[1];
+
+            // ← ОБНОВЛЯЕМ ЗАЩИТУ ОТ ОТРИЦАТЕЛЬНЫХ ЗНАЧЕНИЙ
+            updateValueMin();
+        }
+
+        // === НОВАЯ ФУНКЦИЯ: защита от отрицательных значений ===
+        function updateValueMin() {
+            const input = document.getElementById('value');
+            if (currentCategory === 'temperature') {
+                input.removeAttribute('min');        // температура может быть отрицательной
+            } else {
+                input.setAttribute('min', '0');      // длина, масса, объём — только >= 0
+            }
+        }
+
+        async function performConversion() {
+            const valueStr = document.getElementById('value').value.trim();
+            const value = parseFloat(valueStr);
+            const fromUnit = document.getElementById('from-unit').value;
+            const toUnit = document.getElementById('to-unit').value;
+
+            if (valueStr === '' || isNaN(value)) {
+                alert('Введите корректное число');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        category: currentCategory,
+                        from_unit: fromUnit,
+                        to_unit: toUnit,
+                        value: value
+                    })
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('result').textContent = result.formatted_result || result.result;
+                } else {
+                    alert(result.detail || 'Ошибка конвертации');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка соединения');
+            }
+        }
+
+        function swapUnits() {
+            const from = document.getElementById('from-unit');
+            const to = document.getElementById('to-unit');
+            const temp = from.value;
+            from.value = to.value;
+            to.value = temp;
+            performConversion();
+        }
+
+        function clearAll() {
+            document.getElementById('value').value = 1;
+            document.getElementById('result').textContent = '—';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCategories);
+    </script>
+</body>
+</html>
