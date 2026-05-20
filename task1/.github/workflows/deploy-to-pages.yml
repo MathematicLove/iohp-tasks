@@ -1,4 +1,4 @@
-name: On pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -16,14 +16,15 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Copy index.html to docs folder
+      - name: Copy static files to docs folder
         run: |
           mkdir -p docs
-          cp app/templates/index.html docs/index.html
+          cp task1/app/templates/index.html docs/index.html
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
