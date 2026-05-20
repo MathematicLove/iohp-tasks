@@ -7,6 +7,7 @@
 - Температура
 - Объём
 
+## Сайт - на pages всегда статический!!! - он не имеет логики так как не связан с FastAPI! Для запуска лучше прогнать через Docker/Uvicorn!
 GitHub Pages: https://mathematiclove.github.io/iohp-tasks/task1
 
 ### Стек:
