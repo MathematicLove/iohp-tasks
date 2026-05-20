@@ -1,49 +1,7 @@
-# Unit Converter
+# Задачи
 
-Простой и быстрый конвертер единиц с современным интерфейсом.  
-Поддерживает:
-- Длина
-- Масса
-- Температура
-- Объём
+## Задача 1: [FastAPI конвертер метрик](https://github.com/MathematicLove/iohp-tasks/tree/main/task1)
 
-## Сайт - на pages всегда статический!!! - он не имеет логики так как не связан с FastAPI! Для запуска лучше прогнать через Docker/Uvicorn!
-GitHub Pages: https://mathematiclove.github.io/iohp-tasks
+## Задача 2: [OpenMeteoAPI + Docker](https://github.com/MathematicLove/iohp-tasks/tree/main/task2)
 
-### Стек:
-
-#### **Back-end:**
-- FastAPI (Python 3.12)
-- Pydantic
-- Uvicorn
-
-#### **Front-end:**
-- HTML5 + Tailwind CSS
-- JavaScript
-- Font Awesome
-
-- Docker + Docker Compose
-- GitHub Pages (статическая версия)
-
-### Запуск
-
-#### Локально через uvicorn:
-
-```bash
-cd task1
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-#### Через Docker:
-
-```bash
-cd task1
-docker-compose up --build -d
-```
-
-Остановка:
-```bash
-cd task1
-docker-compose down
-```
+## Задача 3: [Ссылка на таблицу](https://docs.google.com/spreadsheets/d/1zYnO3ldSul2_R3vzUgvUiyn4plF8cWJmLRGRlrC8wI0/edit?hl=ru&gid=0#gid=0) / [Код](https://github.com/MathematicLove/iohp-tasks/tree/main/task3)
