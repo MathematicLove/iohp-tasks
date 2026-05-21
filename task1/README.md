@@ -22,6 +22,7 @@ GitHub Pages: https://mathematiclove.github.io/iohp-tasks
 - JavaScript
 - Font Awesome
 
+## **Контейнеризация и деплой**
 - Docker + Docker Compose
 - GitHub Pages (статическая версия)
 
